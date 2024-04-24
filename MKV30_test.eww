@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<workspace>
+    
+  <batchBuild>
+        
+    <batchDefinition>
+            
+      <name>all</name>
+            
+      <member>
+                
+        <project>MKV30_test</project>
+                
+        <configuration>release</configuration>
+              
+      </member>
+            
+      <member>
+                
+        <project>MKV30_test</project>
+                
+        <configuration>debug</configuration>
+              
+      </member>
+          
+    </batchDefinition>
+        
+    <batchDefinition>
+            
+      <name>release</name>
+            
+      <member>
+                
+        <project>MKV30_test</project>
+                
+        <configuration>release</configuration>
+              
+      </member>
+          
+    </batchDefinition>
+        
+    <batchDefinition>
+            
+      <name>debug</name>
+            
+      <member>
+                
+        <project>MKV30_test</project>
+                
+        <configuration>debug</configuration>
+              
+      </member>
+          
+    </batchDefinition>
+      
+  </batchBuild>
+    
+  <project>
+        
+    <path>$WS_DIR$/MKV30_test.ewp</path>
+      
+  </project>
+  
+</workspace>

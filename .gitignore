@@ -1,14 +1,14 @@
 # Ignore IAR Embedded Workbench specific files
-*.ewp
-*.eww
-*.ewd
-*.dep
-*.bak
-*.pca
-*.crf
-*_make_log.txt
-*_make_log.html
-*.sct
+# *.ewp
+# *.eww
+# *.ewd
+# *.dep
+# *.bak
+# *.pca
+# *.crf
+# *_make_log.txt
+# *_make_log.html
+# *.sct
 
 # Ignore object files and output files
 *.o
