@@ -1,0 +1,18 @@
+{
+  "workspace": {
+    "path": "${workspaceFolder}\\MKV30_test.eww"
+  },
+  "workspaces": {
+    "${workspaceFolder}\\MKV30_test.eww": {
+      "configs": {
+        "${workspaceFolder}\\MKV30_test.ewp": "debug"
+      },
+      "selected": {
+        "path": "${workspaceFolder}\\MKV30_test.ewp"
+      }
+    }
+  },
+  "workbench": {
+    "path": "C:\\Program Files\\IAR Systems\\Embedded Workbench 9.2"
+  }
+}
