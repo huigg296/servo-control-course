@@ -144,15 +144,15 @@ int main(void)
 //		Vin = ADC16_GetChannelConversionValue(ADC0, ADC0_CH0_CONTROL_GROUP);
 //		printf("Vin = %d\n\r", Vin);
 		
-//        if (!PUSH())
-//        	LED_ON();
-//        else
-//        	LED_OFF();
-//        
-//        if (!S5())
-//        	BUZZ_ON();
-//        else
-//        	BUZZ_OFF();
+        if (!PUSH())
+        	LED_ON();
+        else
+        	LED_OFF();
+        
+        if (!S5())
+        	BUZZ_ON();
+        else
+        	BUZZ_OFF();
 		
 //		DAC_SetBufferValue(DAC0, 0U, dacValue);
       
