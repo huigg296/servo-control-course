@@ -31,3 +31,6 @@ settings
 Debug
 Release
 Obj
+
+# Ignore Clion
+.idea
