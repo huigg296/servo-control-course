@@ -55,6 +55,7 @@ void delay()
  */
 int main(void)
 {
+    /*************************** 初始化 ***************************/
     adc16_channel_config_t adc16ChannelConfigStruct;
 	int16_t Vin;
 	
@@ -75,19 +76,22 @@ int main(void)
     
 //    printf("Hello World!");
 
+    // ADC配置
 	adc16ChannelConfigStruct.channelNumber                        = 0U;
     adc16ChannelConfigStruct.enableInterruptOnConversionCompleted = false;
     adc16ChannelConfigStruct.enableDifferentialConversion = true;
 
-	state_pha = PHA();			state_phb = PHB();
-	state_pha_t = state_pha;	state_phb_t = state_phb;
-	QES_value_t = QES_value;
-	
+    // 旋转编码器状态
+	state_pha = PHA();			state_phb = PHB(); // 读取旋转编码器状态
+	state_pha_t = state_pha;	state_phb_t = state_phb; // 上一次旋转编码器状态
+	QES_value_t = QES_value; // 编码器值
+
+    /*************************** 主循环 ***************************/
     while (1)
     {
 		state_pha = PHA();			state_phb = PHB();
 
-        // 关于编码开关的数值转动
+        // 编码开关控制数值变化，数值范围0~99
 		if((state_pha_t != state_pha) || (state_phb_t != state_phb))
 		{
 			if(state_phb_t == state_phb)
@@ -121,7 +125,8 @@ int main(void)
 			state_phb_t = state_phb;
             //delay_1ms(10);		// de-jitter
 		}
-		
+
+        // 如果编码器数值发生变化，更新PWM输出
 		if(QES_value>99)
 			QES_value = 99;
 		if(QES_value_t != QES_value)
@@ -135,7 +140,8 @@ int main(void)
 //		if(counter>99)
 //			counter = 0;
 //		lab_pwm_set(counter, 100-counter, counter, 100-counter);
-		
+
+        // 读取ADC数值，即板子上的Ve
         ADC16_SetChannelConfig(ADC0, ADC0_CH0_CONTROL_GROUP, &adc16ChannelConfigStruct);
         while (0U == (kADC16_ChannelConversionDoneFlag &
                       ADC16_GetChannelStatusFlags(ADC0, ADC0_CH0_CONTROL_GROUP)))
@@ -143,7 +149,8 @@ int main(void)
         }
 //		Vin = ADC16_GetChannelConversionValue(ADC0, ADC0_CH0_CONTROL_GROUP);
 //		printf("Vin = %d\n\r", Vin);
-		
+
+        // 按压开关控制LED和蜂鸣器
         if (!PUSH())
         	LED_ON();
         else
