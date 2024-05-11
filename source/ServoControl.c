@@ -131,6 +131,7 @@ int main(void)
                 QES_value_t = QES_value;
             }
         }
+
         /*************************** 闭环控制 ***************************/
         // 读取ADC数值，即板子上的Ve
         ADC16_SetChannelConfig(ADC0, ADC0_CH0_CONTROL_GROUP, &adc16ChannelConfigStruct);
@@ -138,10 +139,10 @@ int main(void)
                       ADC16_GetChannelStatusFlags(ADC0, ADC0_CH0_CONTROL_GROUP)))
         {
         }
-		Vin = ADC16_GetChannelConversionValue(ADC0, ADC0_CH0_CONTROL_GROUP);
+		Vin = ADC16_GetChannelConversionValue(ADC0, ADC0_CH0_CONTROL_GROUP); // 8位ADC，数值范围-32767~32767
 		// printf("Vin = %d\n\r", Vin);
 
-        Vout = (Vin+32767)>>4;
+        Vout = (Vin+32767)>>4; // 数值放大，不过由于DAC抖动较严重，最后看到的波形是大扰动
         DAC_SetBufferValue(DAC0_PERIPHERAL, 0U, Vout);
 
         if (!S4()) {
@@ -151,7 +152,12 @@ int main(void)
             V_ctrl = PIDCalc(0, motor_PIDInfo); // TODO:测试控制量获取
 
             // 执行器：PWM输出
-
+            if (V_ctrl >= 0) {
+                lab_pwm_set(0, 0, V_ctrl, 0);
+            }
+            else {
+                lab_pwm_set(0, 0, 0, -V_ctrl);
+            }
         }
 
         /*************************** 开发板正常运行测试 ***************************/
@@ -159,9 +165,7 @@ int main(void)
         	BUZZ_ON();
         else
         	BUZZ_OFF();
-		
-//		DAC_SetBufferValue(DAC0, 0U, dacValue);
-      
+
     }
 }
 
