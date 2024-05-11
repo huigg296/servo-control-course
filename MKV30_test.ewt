@@ -3103,6 +3103,9 @@
     <group>
         <name>source</name>
         <file>
+            <name>$PROJ_DIR$\source\pid.c</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\source\ServoControl.c</name>
         </file>
     </group>

@@ -18,7 +18,7 @@
 #include "fsl_pit.h"
 #include "fsl_dac.h"
 #include "Lab_pwm.h"
-
+#include "pid.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -39,6 +39,8 @@ adc16_channel_config_t ADC_channelsConfig[1] = {
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
+float V_ctrl = 0;
+extern PID_Parameter* motor_PIDInfo;
 
 /*******************************************************************************
  * Code
@@ -58,7 +60,7 @@ int main(void)
     /*************************** 初始化 ***************************/
     adc16_channel_config_t adc16ChannelConfigStruct;
 	int16_t Vin;
-    float angle_error;
+        uint16_t Vout;
 	
 	uint16_t counter;
 	uint8_t dc0, dc1, dc2, dc3;

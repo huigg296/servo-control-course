@@ -695,7 +695,7 @@
             <data>
                 <extensions></extensions>
                 <cmdline></cmdline>
-                <hasPrio>128</hasPrio>
+                <hasPrio>1</hasPrio>
                 <buildSequence>inputOutputBased</buildSequence>
             </data>
         </settings>
@@ -2383,6 +2383,9 @@
     </group>
     <group>
         <name>source</name>
+        <file>
+            <name>$PROJ_DIR$\source\pid.c</name>
+        </file>
         <file>
             <name>$PROJ_DIR$\source\ServoControl.c</name>
         </file>
