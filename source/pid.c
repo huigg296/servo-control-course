@@ -11,13 +11,13 @@ PID_Parameter speed_Parameter =
                 .integral = 0,   //初始化，勿改动
                 .lastError = 0,  //初始化，勿改动
                 .error = 0,		//初始化，勿改动
-                .kp = 0.5,
+                .kp = 400,
                 .ki = 0,
                 .kd = 0,
-                .proportionMax = 60,    // 比例项最大值
+                .proportionMax = 100,    // 比例项最大值
                 .integralMax = 0,       // 积分项最大值
                 .derivativeMax = 0,     // 微分项最大值
-                .outputMax = 60         // 输出最大值
+                .outputMax = 100         // 输出最大值
         };
 PID_Parameter* motor_PIDInfo = &speed_Parameter;
 

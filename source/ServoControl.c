@@ -26,6 +26,11 @@
 #define SET		1
 
 uint32_t msCounter=0;
+float V_ctrl = 0;
+int16_t Vin;
+uint16_t Vout;
+extern PID_Parameter* motor_PIDInfo;
+
 
 adc16_channel_config_t ADC_channelsConfig[1] = {
   {
@@ -39,8 +44,6 @@ adc16_channel_config_t ADC_channelsConfig[1] = {
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
-float V_ctrl = 0;
-extern PID_Parameter* motor_PIDInfo;
 
 /*******************************************************************************
  * Code
@@ -59,8 +62,7 @@ int main(void)
 {
     /*************************** 初始化 ***************************/
     adc16_channel_config_t adc16ChannelConfigStruct;
-	int16_t Vin;
-        uint16_t Vout;
+
 	
 	uint16_t counter;
 	uint8_t dc0, dc1, dc2, dc3;
@@ -88,12 +90,16 @@ int main(void)
 	state_pha = PHA();			state_phb = PHB(); // 读取旋转编码器状态
 	state_pha_t = state_pha;	state_phb_t = state_phb; // 上一次旋转编码器状态
 	QES_value_t = QES_value; // 编码器值
+        
+        // 使能点击
+        EN1_HIGH();
+        EN2_HIGH();
 
     /*************************** 主循环 ***************************/
     while (1)
     {
         /*************************** 开环控制测试 ***************************/
-        if (S4()) {
+        if (!S4()) {
             LED_OFF();
             state_pha = PHA();
             state_phb = PHB();
@@ -145,18 +151,18 @@ int main(void)
         Vout = (Vin+32767)>>4; // 数值放大，不过由于DAC抖动较严重，最后看到的波形是大扰动
         DAC_SetBufferValue(DAC0_PERIPHERAL, 0U, Vout);
 
-        if (!S4()) {
+        if (S4()) {
             LED_ON();
             // 控制器：PID控制
-            motor_PIDInfo->input = Vin;
+            motor_PIDInfo->input = (float)(Vin) / 32768;
             V_ctrl = PIDCalc(0, motor_PIDInfo); // TODO:测试控制量获取
 
             // 执行器：PWM输出
             if (V_ctrl >= 0) {
-                lab_pwm_set(0, 0, V_ctrl, 0);
+                lab_pwm_set(0, V_ctrl, 0, 0);
             }
             else {
-                lab_pwm_set(0, 0, 0, -V_ctrl);
+                lab_pwm_set(-V_ctrl, 0, 0, 0);
             }
         }
 
