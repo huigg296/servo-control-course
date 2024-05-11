@@ -58,6 +58,7 @@ int main(void)
     /*************************** 初始化 ***************************/
     adc16_channel_config_t adc16ChannelConfigStruct;
 	int16_t Vin;
+    float angle_error;
 	
 	uint16_t counter;
 	uint8_t dc0, dc1, dc2, dc3;
@@ -89,73 +90,66 @@ int main(void)
     /*************************** 主循环 ***************************/
     while (1)
     {
-		state_pha = PHA();			state_phb = PHB();
+        /*************************** 开环控制测试 ***************************/
+        if (S4()) {
+            LED_OFF();
+            state_pha = PHA();
+            state_phb = PHB();
 
-        // 编码开关控制数值变化，数值范围0~99
-		if((state_pha_t != state_pha) || (state_phb_t != state_phb))
-		{
-			if(state_phb_t == state_phb)
-			{
-				if(SET == state_phb)
-				{
-					if(RESET == state_pha) QES_value++;
-					else if(QES_value>0) QES_value--;
-				}
-				else
-				{
-					if(SET == state_pha) QES_value++;
-					else if(QES_value>0) QES_value--;
-				}
-			}
-			else
-			{
-				if(SET == state_pha)
-				{
-					if(SET == state_phb) QES_value++;
-					else if(QES_value>0) QES_value--;
-				}
-				else
-				{
-					if(RESET == state_pha) QES_value++;
-					else if(QES_value>0) QES_value--;
-				}
-			}
+            // 编码开关控制数值变化，数值范围0~99
+            if ((state_pha_t != state_pha) || (state_phb_t != state_phb)) {
+                if (state_phb_t == state_phb) {
+                    if (SET == state_phb) {
+                        if (RESET == state_pha) QES_value++;
+                        else if (QES_value > 0) QES_value--;
+                    } else {
+                        if (SET == state_pha) QES_value++;
+                        else if (QES_value > 0) QES_value--;
+                    }
+                } else {
+                    if (SET == state_pha) {
+                        if (SET == state_phb) QES_value++;
+                        else if (QES_value > 0) QES_value--;
+                    } else {
+                        if (RESET == state_pha) QES_value++;
+                        else if (QES_value > 0) QES_value--;
+                    }
+                }
 
-			state_pha_t = state_pha;
-			state_phb_t = state_phb;
-            //delay_1ms(10);		// de-jitter
-		}
+                state_pha_t = state_pha;
+                state_phb_t = state_phb;
+                //delay_1ms(10);		// de-jitter
+            }
 
-        // 如果编码器数值发生变化，更新PWM输出
-		if(QES_value>99)
-			QES_value = 99;
-		if(QES_value_t != QES_value)
-		{
-			lab_pwm_set(QES_value, 100-QES_value, QES_value, 100-QES_value);
-			QES_value_t = QES_value;
-		}
-
-//		delay();
-//		counter++;
-//		if(counter>99)
-//			counter = 0;
-//		lab_pwm_set(counter, 100-counter, counter, 100-counter);
-
+            // 如果编码器数值发生变化，更新PWM输出
+            if (QES_value > 99)
+                QES_value = 99;
+            if (QES_value_t != QES_value) {
+                lab_pwm_set(QES_value, 100 - QES_value, QES_value, 100 - QES_value);
+                QES_value_t = QES_value;
+            }
+        }
+        /*************************** 闭环控制 ***************************/
         // 读取ADC数值，即板子上的Ve
         ADC16_SetChannelConfig(ADC0, ADC0_CH0_CONTROL_GROUP, &adc16ChannelConfigStruct);
         while (0U == (kADC16_ChannelConversionDoneFlag &
                       ADC16_GetChannelStatusFlags(ADC0, ADC0_CH0_CONTROL_GROUP)))
         {
         }
-//		Vin = ADC16_GetChannelConversionValue(ADC0, ADC0_CH0_CONTROL_GROUP);
-//		printf("Vin = %d\n\r", Vin);
+		Vin = ADC16_GetChannelConversionValue(ADC0, ADC0_CH0_CONTROL_GROUP);
+		// printf("Vin = %d\n\r", Vin);
 
-        // 按压开关控制LED和蜂鸣器
-        if (!PUSH())
-        	LED_ON();
-        else
-        	LED_OFF();
-        
+        if (!S4()) {
+            LED_ON();
+            // 控制器：PID控制
+            motor_PIDInfo->input = Vin;
+            V_ctrl = PIDCalc(0, motor_PIDInfo); // TODO:测试控制量获取
+
+            // 执行器：PWM输出
+
+        }
+
+        /*************************** 开发板正常运行测试 ***************************/
         if (!S5())
         	BUZZ_ON();
         else
