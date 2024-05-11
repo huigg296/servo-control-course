@@ -139,6 +139,9 @@ int main(void)
 		Vin = ADC16_GetChannelConversionValue(ADC0, ADC0_CH0_CONTROL_GROUP);
 		// printf("Vin = %d\n\r", Vin);
 
+        Vout = (Vin+32767)>>4;
+        DAC_SetBufferValue(DAC0_PERIPHERAL, 0U, Vout);
+
         if (!S4()) {
             LED_ON();
             // 控制器：PID控制
