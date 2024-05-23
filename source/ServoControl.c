@@ -153,10 +153,7 @@ int main(void)
         DAC_SetBufferValue(DAC0_PERIPHERAL, 0U, Vout);
 
         if (S4()) {     // S4拨码开关位于B档
-
             LED_ON();
-
-
             // 控制器：PID控制
             motor_PIDInfo->input = (float)(Vin) / 32768;
             V_ctrl = PIDCalc(0, motor_PIDInfo); // TODO:测试控制量获取
@@ -168,7 +165,7 @@ int main(void)
                     lab_pwm_set(0, V_ctrl, QES_value, 0);
                 }
                 else {
-                    lab_pwm_set(-V_ctrl, 0, QE_value, 0);
+                    lab_pwm_set(-V_ctrl, 0, QES_value, 0);
                 }
             }
 
@@ -176,10 +173,10 @@ int main(void)
             else {
                 if (V_ctrl >= 0) {
                     lab_pwm_set(0, V_ctrl, 0, 0);
-                }
-                else {
+                } else {
                     lab_pwm_set(-V_ctrl, 0, 0, 0);
                 }
+            }
         }
 
         /*************************** 开发板正常运行测试 ***************************/
