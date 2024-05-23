@@ -155,8 +155,14 @@ int main(void)
         if (S4()) {     // S4拨码开关位于B档
             LED_ON();
             // 控制器：PID控制
-            motor_PIDInfo->input = (float)(Vin) / 32768;
-            V_ctrl = PIDCalc(0, motor_PIDInfo); // TODO:测试控制量获取
+            /************** 阶跃信号测试 ***************/
+            if(S6()) {
+                motor_PIDInfo->input = (float) (Vin) / 32768;
+                V_ctrl = PIDCalc(0, motor_PIDInfo);
+            } else {
+                V_ctrl = 0;
+            }
+
 
             // 执行器控制
             /************** 自动发送模式 ***************/
