@@ -156,28 +156,30 @@ int main(void)
 
             LED_ON();
 
-            // 手动控制电机转动
+
             // 控制器：PID控制
             motor_PIDInfo->input = (float)(Vin) / 32768;
             V_ctrl = PIDCalc(0, motor_PIDInfo); // TODO:测试控制量获取
 
-            // 执行器：PWM输出
-            if (V_ctrl >= 0) {
-                lab_pwm_set(0, V_ctrl, 0, 0);
-            }
-            else {
-                lab_pwm_set(-V_ctrl, 0, 0, 0);
-            }
-
-            // 电机匀速转动，跟随模式
+            // 执行器控制
+            /************** 自动发送模式 ***************/
             if(S3()) {
-                if (QES_value > 50) {
-                    lab_pwm_set(0, 0, 50, 0);
+                if (V_ctrl >= 0) {
+                    lab_pwm_set(0, V_ctrl, QES_value, 0);
                 }
                 else {
-                    lab_pwm_set(0, 0, QES_value, 0);
+                    lab_pwm_set(-V_ctrl, 0, QE_value, 0);
                 }
             }
+
+            /*************** 手动发送模式 ***************/
+            else {
+                if (V_ctrl >= 0) {
+                    lab_pwm_set(0, V_ctrl, 0, 0);
+                }
+                else {
+                    lab_pwm_set(-V_ctrl, 0, 0, 0);
+                }
         }
 
         /*************************** 开发板正常运行测试 ***************************/
