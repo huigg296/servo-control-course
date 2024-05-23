@@ -98,9 +98,7 @@ int main(void)
     /*************************** 主循环 ***************************/
     while (1)
     {
-        /*************************** 开环控制测试 ***************************/
-        if (!S4()) {
-            LED_OFF();
+        /*************************** 编码器数据读取 ***************************/
             state_pha = PHA();
             state_phb = PHB();
 
@@ -129,14 +127,17 @@ int main(void)
                 //delay_1ms(10);		// de-jitter
             }
 
+            /*************************** 开环控制测试 ***************************/
             // 如果编码器数值发生变化，更新PWM输出
-            if (QES_value > 99)
-                QES_value = 99;
-            if (QES_value_t != QES_value) {
-                lab_pwm_set(QES_value, 100 - QES_value, QES_value, 100 - QES_value);
-                QES_value_t = QES_value;
+            if (!S4()) {    // S4拨码开关位于F档
+                LED_OFF();
+                if (QES_value > 99)
+                    QES_value = 99;
+                if (QES_value_t != QES_value) {
+                    lab_pwm_set(QES_value, 100 - QES_value, QES_value, 100 - QES_value);
+                    QES_value_t = QES_value;
+                }
             }
-        }
 
         /*************************** 闭环控制 ***************************/
         // 读取ADC数值，即板子上的Ve
@@ -151,8 +152,11 @@ int main(void)
         Vout = (Vin+32767)>>4; // 数值放大，不过由于DAC抖动较严重，最后看到的波形是大扰动
         DAC_SetBufferValue(DAC0_PERIPHERAL, 0U, Vout);
 
-        if (S4()) {
+        if (S4()) {     // S4拨码开关位于B档
+
             LED_ON();
+
+            // 手动控制电机转动
             // 控制器：PID控制
             motor_PIDInfo->input = (float)(Vin) / 32768;
             V_ctrl = PIDCalc(0, motor_PIDInfo); // TODO:测试控制量获取
@@ -164,11 +168,25 @@ int main(void)
             else {
                 lab_pwm_set(-V_ctrl, 0, 0, 0);
             }
+
+            // 电机匀速转动，跟随模式
+            if(S3()) {
+                if (QES_value > 50) {
+                    lab_pwm_set(0, 0, 50, 0);
+                }
+                else {
+                    lab_pwm_set(0, 0, QES_value, 0);
+                }
+            }
         }
 
         /*************************** 开发板正常运行测试 ***************************/
-        if (!S5())
-        	BUZZ_ON();
+
+        if (!S5()) {
+            // 清空积分项
+            motor_PIDInfo->integral = 0;
+            BUZZ_ON();
+        }
         else
         	BUZZ_OFF();
 
