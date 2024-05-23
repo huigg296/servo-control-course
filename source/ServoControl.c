@@ -130,7 +130,6 @@ int main(void)
             /*************************** 开环控制测试 ***************************/
             // 如果编码器数值发生变化，更新PWM输出
             if (!S4()) {    // S4拨码开关位于F档
-                LED_OFF();
                 if (QES_value > 99)
                     QES_value = 99;
                 if (QES_value_t != QES_value) {
@@ -139,30 +138,37 @@ int main(void)
                 }
             }
 
-        /*************************** 闭环控制 ***************************/
+        /*************************** 误差输入 ***************************/
         // 读取ADC数值，即板子上的Ve
-        ADC16_SetChannelConfig(ADC0, ADC0_CH0_CONTROL_GROUP, &adc16ChannelConfigStruct);
-        while (0U == (kADC16_ChannelConversionDoneFlag &
-                      ADC16_GetChannelStatusFlags(ADC0, ADC0_CH0_CONTROL_GROUP)))
-        {
-        }
-		Vin = ADC16_GetChannelConversionValue(ADC0, ADC0_CH0_CONTROL_GROUP); // 8位ADC，数值范围-32767~32767
-		// printf("Vin = %d\n\r", Vin);
-
-        Vout = (Vin+32767)>>4; // 数值放大，不过由于DAC抖动较严重，最后看到的波形是大扰动
-        DAC_SetBufferValue(DAC0_PERIPHERAL, 0U, Vout);
-
-        if (S4()) {     // S4拨码开关位于B档
+        if (S9()) {
             LED_ON();
+
+            ADC16_SetChannelConfig(ADC0, ADC0_CH0_CONTROL_GROUP, &adc16ChannelConfigStruct);
+            while (0U == (kADC16_ChannelConversionDoneFlag &
+                          ADC16_GetChannelStatusFlags(ADC0, ADC0_CH0_CONTROL_GROUP))) {
+            }
+            Vin = ADC16_GetChannelConversionValue(ADC0, ADC0_CH0_CONTROL_GROUP); // 8位ADC，数值范围-32767~32767
+            // printf("Vin = %d\n\r", Vin);
+
+            Vout = (Vin + 32767) >> 4; // 数值放大，不过由于DAC抖动较严重，最后看到的波形是大扰动
+            DAC_SetBufferValue(DAC0_PERIPHERAL, 0U, Vout);
+        } else {
+            /*************** 阶跃测试 ******************/
+            LED_OFF();
+            
+            Vin = 0;
+            if(!S7()) {     // 按下S7
+                Vin = 1000;
+            }
+        }
+
+
+        /*************************** 闭环控制 ***************************/
+        if (S4()) {     // S4拨码开关位于B档
             // 控制器：PID控制
             /************** 阶跃信号测试 ***************/
-            if(S6()) {
                 motor_PIDInfo->input = (float) (Vin) / 32768;
                 V_ctrl = PIDCalc(0, motor_PIDInfo);
-            } else {
-                V_ctrl = 0;
-            }
-
 
             // 执行器控制
             /************** 自动发送模式 ***************/
