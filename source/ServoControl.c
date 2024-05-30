@@ -19,8 +19,6 @@
 #include "fsl_dac.h"
 #include "Lab_pwm.h"
 #include "pid.h"
-#include <queue>
-
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -31,6 +29,7 @@ uint32_t msCounter=0;
 float V_ctrl = 0;
 int16_t Vin;
 uint16_t Vout;
+uint16_t Vout_filtered;
 extern PID_Parameter* motor_PIDInfo;
 
 
@@ -88,10 +87,6 @@ int main(void)
     adc16ChannelConfigStruct.enableInterruptOnConversionCompleted = false;
     adc16ChannelConfigStruct.enableDifferentialConversion = true;
 
-    // 滑动窗口滤波
-    std::queue<uint16_t> window;
-    uint32_t sum = 0;
-
     // 旋转编码器状态
 	state_pha = PHA();			state_phb = PHB(); // 读取旋转编码器状态
 	state_pha_t = state_pha;	state_phb_t = state_phb; // 上一次旋转编码器状态
@@ -135,6 +130,7 @@ int main(void)
 
             /*************************** 开环控制测试 ***************************/
             // 如果编码器数值发生变化，更新PWM输出
+            /*
             if (!S4()) {    // S4拨码开关位于F档
                 if (QES_value > 99)
                     QES_value = 99;
@@ -143,6 +139,12 @@ int main(void)
                     QES_value_t = QES_value;
                 }
             }
+
+*/
+            if (!S4()) {    // S4拨码开关位于F档
+                 lab_pwm_set(0, 9, 0, 0);
+            }
+            
 
         /*************************** 误差输入 ***************************/
         // 读取ADC数值，即板子上的Ve
@@ -154,27 +156,18 @@ int main(void)
                           ADC16_GetChannelStatusFlags(ADC0, ADC0_CH0_CONTROL_GROUP))) {
             }
             Vin = ADC16_GetChannelConversionValue(ADC0, ADC0_CH0_CONTROL_GROUP); // 8位ADC，数值范围-32767~32767
-            // printf("Vin = %d\n\r", Vin);
+            // printf("Vin = %d\n\r", Vin)
 
-            Vout = (Vin + 32767) >> 4; // 数值放大，不过由于DAC抖动较严重，最后看到的波形是大扰动
-
-            // 滑动窗口滤波
-            if (window.size() < 100) {
-                window.push(Vout);
-                sum += Vout;
-            } else {
-                window.pop();
-                window.push(Vout);
-                sum = sum - window.front() + Vout;
-            }
-            uint16_t Vout_filtered = sum / window.size();
-            DAC_SetBufferValue(DAC0, 0U, Vout_filtered);
 
         } else {
             /*************** 阶跃测试 ******************/
             LED_OFF();
             Vin = 0;
         }
+    
+        Vout = (Vin + 32767) >> 4; // 数值放大，不过由于DAC抖动较严重，最后看到的波形是大扰动
+   
+         DAC_SetBufferValue(DAC0, 0U, Vout);
 
 
         /*************************** 闭环控制 ***************************/
