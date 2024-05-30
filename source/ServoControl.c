@@ -19,6 +19,8 @@
 #include "fsl_dac.h"
 #include "Lab_pwm.h"
 #include "pid.h"
+#include <queue>
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -86,6 +88,10 @@ int main(void)
     adc16ChannelConfigStruct.enableInterruptOnConversionCompleted = false;
     adc16ChannelConfigStruct.enableDifferentialConversion = true;
 
+    // 滑动窗口滤波
+    std::queue<uint16_t> window;
+    uint32_t sum = 0;
+
     // 旋转编码器状态
 	state_pha = PHA();			state_phb = PHB(); // 读取旋转编码器状态
 	state_pha_t = state_pha;	state_phb_t = state_phb; // 上一次旋转编码器状态
@@ -151,7 +157,19 @@ int main(void)
             // printf("Vin = %d\n\r", Vin);
 
             Vout = (Vin + 32767) >> 4; // 数值放大，不过由于DAC抖动较严重，最后看到的波形是大扰动
-            DAC_SetBufferValue(DAC0_PERIPHERAL, 0U, Vout);
+
+            // 滑动窗口滤波
+            if (window.size() < 100) {
+                window.push(Vout);
+                sum += Vout;
+            } else {
+                window.pop();
+                window.push(Vout);
+                sum = sum - window.front() + Vout;
+            }
+            uint16_t Vout_filtered = sum / window.size();
+            DAC_SetBufferValue(DAC0, 0U, Vout_filtered);
+
         } else {
             /*************** 阶跃测试 ******************/
             LED_OFF();
